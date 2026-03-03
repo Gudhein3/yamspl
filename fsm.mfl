@@ -1,0 +1,21 @@
+form next: (human eat) -> (human sleep 2)
+form next: (human sleep 2) -> (human sleep 1)
+form next: (human sleep 1) -> (human game)
+form next: (human game) -> (human eat)
+form next: (X Y) -> (You are not a human)
+
+let husband = (human sleep 2)
+show husband
+
+let husband = next[husband] show husband
+let husband = next[husband] show husband
+let husband = next[husband] show husband
+let husband = next[husband] show husband
+let husband = next[husband] show husband
+let husband = next[husband] show husband
+let husband = next[husband] show husband
+let husband = next[husband] show husband
+let husband = next[husband] show husband
+let husband = next[husband] show husband
+let husband = next[husband] show husband
+let husband = next[husband] show husband
