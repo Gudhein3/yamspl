@@ -8,7 +8,7 @@ class Context:
 meta_transformations: Dict[str, List[Tuple[SExpr, SExpr]]] = {}
 transformations: Dict[str, List[Tuple[SExpr, SExpr, Token]]] = {}
 ctx_glbl = Context({}, {})
-ctx_list: List[Context] = []    
+ctx_list: List[Context] = []
 
 def get_context() -> Context:
     if ctx_list:
@@ -98,7 +98,7 @@ def interpret_expr(e: Expr, comptime: bool = False, tok: Token | None = None) ->
             raise RuntimeError(f"Unknown meta-transformation or builtin function `{e.fun}' at {format_loc(tok) if tok else 'Somewhere'}")
         raise RuntimeError(f"CT-Call is avaliable only at transformation definition at {format_loc(tok) if tok else 'Somewhere'}")
     if isinstance(e, ExprTuple):
-        return SExprTuple(e.token, False, [interpret_expr(i) for i in e.el])
+        return SExprTuple(e.token, False, [interpret_expr(i, comptime, tok) for i in e.el])
     if isinstance(e, ExprQuote):
         return expr_to_sexpr(e.sentence)
     assert False, "Unreachable"
@@ -307,4 +307,3 @@ def interpret_program(prog: List[Stmt]) -> None:
         inst = prog[pc]
         interpret_stmt(inst)
         pc += 1
-

@@ -1,0 +1,60 @@
+// I wanted to implement a typing system for my compiler but since I don't know the theory, I decided to learn the type theory first.
+// And since I have own "Math" language, I choosed it to figure out how the theory does work.
+
+// Based on this Math paper: https://www.cl.cam.ac.uk/teaching//1819/Types/lec-1.pdf
+
+form get_type: (E j T) -> T
+form get_expr: (E j T) -> E
+
+let True = (true j bool)
+let False = (false j bool)
+
+form make_int: I -> (I j int)
+
+
+form sum: (A add (s B)) -> sum[((s A) add B)]
+form sum: (A add 0) -> A
+
+form sub: ((s A) sub (s B)) -> sub[(A sub B)]
+form sub: (A sub 0) -> A
+form sub: (0 sub B) -> 0
+
+// ≤
+form le: ((s A) le (s B)) -> le[(A le B)]
+form le: (0 le B) -> (true j bool)
+form le: (A le 0) -> (false j bool)
+
+
+form to_bool: t -> (true j bool)
+form to_bool: f -> (false j bool)
+
+form eval: ((A j int) add (B j int)) -> (sum[(eval[A] add eval[B])] j int)
+form eval: ((A j int) sub (B j int)) -> (sub[(eval[A] sub eval[B])] j int)
+
+form eval: ((A j int) le (B j int)) -> le[(eval[A] le eval[B])]
+
+form eval: (not (false j bool)) -> (true j bool)
+form eval: (not (true  j bool)) -> (false j bool)
+
+form eval: ((false j bool) and (false j bool)) -> (false j bool)
+form eval: ((false j bool) and (true  j bool)) -> (false j bool)
+form eval: ((true  j bool) and (false j bool)) -> (false j bool)
+form eval: ((true  j bool) and (true  j bool)) -> (true j bool)
+
+form eval: A -> A
+
+let a = make_int[_TOPEANO[3]]
+let b = make_int[_TOPEANO[1]]
+let c = make_int[_TOPEANO[2]]
+print 'a:'
+show a
+print '\nb:'
+show b
+print '\nc:'
+show c
+let t1 = eval[(b add c)]
+print '\nb+c:'
+show t1
+let t = eval[(t1 le t1)]
+print '\na≤(b+c):'
+show t
