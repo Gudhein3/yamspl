@@ -1,5 +1,7 @@
-func f = () {
-    let Result = 5
+func f = (A B) {
+    show A
+    show B
+    let Result = (B A)
 }
 
-show f[()]
+show f[(3 4)]
