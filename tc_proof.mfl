@@ -1,0 +1,89 @@
+// To proof Turing Completeness we use Rule 110 because it's proved to be Turing Complete.
+
+// This code uses Left-Most(LM) and Right-Most(RM) representations of arrays.
+// The difference between them is in the direction of wrapping.
+// Left-Most  is (((1st 2nd) 3rd) 4th)
+// Right-Most is (1st (2nd (3rd 4th)))
+
+form iter: ((((A 1) 1) 1) B) -> (((A 1) 1) (0 B))
+form iter: ((((A 1) 1) 0) B) -> (((A 1) 1) (1 B))
+form iter: ((((A 1) 0) 1) B) -> (((A 1) 0) (1 B))
+form iter: ((((A 1) 0) 0) B) -> (((A 1) 0) (0 B))
+form iter: ((((A 0) 1) 1) B) -> (((A 0) 1) (1 B))
+form iter: ((((A 0) 1) 0) B) -> (((A 0) 1) (1 B))
+form iter: ((((A 0) 0) 1) B) -> (((A 0) 0) (1 B))
+form iter: ((((A 0) 0) 0) B) -> (((A 0) 0) (0 B))
+
+form rm2lm: (A (B C)) -> rm2lm[((A B) C)]
+form rm2lm: ((A B) C) -> ((A B) C)
+
+form lm2pt: ((A 1) C) -> lm2pt[(A _CONCAT[(O C)])]
+form lm2pt: ((A 0) C) -> lm2pt[(A _CONCAT[(_ C)])]
+form lm2pt: (() C)    -> C
+
+form otoi: (I O) -> (rm2lm[(() (0 (0 O)))] 0)
+form first: (A B) -> A
+form second: (A B) -> B
+
+func f = (A) {
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let A = iter[A]
+    let Result = otoi[A]
+    let Result = ((first[first[Result]] 0) second[Result])
+    show lm2pt[(first[Result] 1)]
+}
+
+form s: A -> s[f[(A)]]
+
+let initial_state = ((((((((((((((((((((((((((((((((((((((((((((((((((((((() 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 0) 1) 0) 0)
+let _ = s[initial_state]
+// let _ = f[(initial_state)]

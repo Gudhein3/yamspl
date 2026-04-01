@@ -1,0 +1,10 @@
+func f = (x) {
+    let y = x
+    show y
+    let Result = y
+}
+
+form s: X -> s[f[(X)]]
+
+show s[5]
+show y

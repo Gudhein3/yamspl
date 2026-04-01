@@ -101,7 +101,7 @@ def interpret_expr(e: Expr, comptime: bool = False, tok: Token | None = None) ->
         return SExprTuple(e.token, False, [interpret_expr(i, comptime, tok) for i in e.el])
     if isinstance(e, ExprQuote):
         return expr_to_sexpr(e.sentence)
-    assert False, "Unreachable"
+    assert False, f"Unreachable: {e}"
 
 def is_unresolved(e: SExpr) -> bool:
     if isinstance(e, SExprSymbol):
@@ -110,7 +110,7 @@ def is_unresolved(e: SExpr) -> bool:
         return True
     if isinstance(e, SExprTuple):
         return any(is_unresolved(i) for i in e.el)
-    assert False, "Unreachable"
+    assert False, f"Unreachable: {e}"
 
 def interpret_sexpr(e: SExpr, comptime: bool = False, tok: Token | None = None) -> SExpr:
     if isinstance(e, SExprSymbol):
@@ -146,7 +146,7 @@ def interpret_sexpr(e: SExpr, comptime: bool = False, tok: Token | None = None) 
         raise RuntimeError(f"Unknown transformation or builtin function `{e.fun}' at {format_loc(tok) if tok else 'Somewhere'}")
     if isinstance(e, SExprTuple):
         return SExprTuple(e.token, False, [interpret_sexpr(i) for i in e.el])
-    assert False, "Unreachable"
+    assert False, f"Unreachable: {e}"
 
 def interpret_expr_extra(e: Expr, comptime: bool = False, tok: Token | None = None) -> SExpr:
     s = interpret_expr(e, comptime, tok)
@@ -186,7 +186,7 @@ def bf_is_symbol(args: BuiltinFunc_Args) -> SExpr:
     return SExprSymbol(args.e.token, False, "FALSE")
 
 def bf_gi(args: BuiltinFunc_Args) -> SExpr:
-    arg = interpret_expr(args.e.arg, args.is_at_comptime, args.token) if isinstance(args.e.arg, Expr) else interpret_sexpr(args.e.arg, args.is_at_comptime, args.token)
+    arg = interpret_sexpr(args.e.arg, args.is_at_comptime, args.token) if isinstance(args.e.arg, SExpr) else interpret_expr(args.e.arg, args.is_at_comptime, args.token)
     if not isinstance(arg, SExprTuple) or len(arg.el) != 2:
         raise RuntimeError(f"Expected ({{EL}} {{ID}}) but got `{stringify(arg)}' at {format_loc(arg.token) if isinstance(arg, Expr) else 'Somewhere'}")
     if not isinstance(arg.el[0], SExprTuple):
@@ -198,7 +198,7 @@ def bf_gi(args: BuiltinFunc_Args) -> SExpr:
     return arg.el[0].el[int(arg.el[1].sym)]
 
 def bf_si(args: BuiltinFunc_Args) -> SExpr:
-    arg = interpret_expr(args.e.arg, args.is_at_comptime, args.token) if isinstance(args.e.arg, Expr) else interpret_sexpr(args.e.arg, args.is_at_comptime, args.token)
+    arg = interpret_sexpr(args.e.arg, args.is_at_comptime, args.token) if isinstance(args.e.arg, SExpr) else interpret_expr(args.e.arg, args.is_at_comptime, args.token)
     if not isinstance(arg, SExprTuple) or len(arg.el) != 3:
         raise RuntimeError(f"Expected ({{EL}} {{ID}} {{VL}}) but got `{stringify(arg)}' at {format_loc(arg.token) if isinstance(arg, Expr) else 'Somewhere'}")
     if not isinstance(arg.el[0], SExprTuple):
@@ -210,9 +210,21 @@ def bf_si(args: BuiltinFunc_Args) -> SExpr:
     i = int(arg.el[1].sym)
     return SExprTuple(arg.token, False, arg.el[0].el[:i]+[arg.el[2]]+arg.el[0].el[i+1:])
 
+def bf_concat(args: BuiltinFunc_Args) -> SExpr:
+    arg = interpret_sexpr(args.e.arg, args.is_at_comptime, args.token) if isinstance(args.e.arg, SExpr) else interpret_expr(args.e.arg, args.is_at_comptime, args.token)
+    if not isinstance(arg, SExprTuple) or len(arg.el) != 2:
+        raise RuntimeError(f"Expected ({{STR}} {{STR}}) or ({{TUPLE}} {{TUPLE}}) but got `{stringify(arg)}' at {format_loc(arg.token) if isinstance(arg, Expr) else 'Somewhere'}")
+    if isinstance(arg.el[0], SExprTuple) and \
+       isinstance(arg.el[1], SExprTuple):
+        return SExprTuple(arg.token, False, arg.el[0].el+arg.el[1].el)
+    if isinstance(arg.el[0], SExprSymbol) and \
+       isinstance(arg.el[1], SExprSymbol):
+        return SExprSymbol(arg.token, False, arg.el[0].sym+arg.el[1].sym)
+    raise RuntimeError(f"Expected ({{STR}} {{STR}}) or ({{TUPLE}} {{TUPLE}}) but got `{stringify(arg)}' at {format_loc(arg.token) if isinstance(arg, Expr) else 'Somewhere'}")
+
 def bf_to_peano(args: BuiltinFunc_Args) -> SExpr:
     tok = args.token if args.token is not None else NITOK
-    arg = interpret_expr(args.e.arg, args.is_at_comptime, args.token) if isinstance(args.e.arg, Expr) else interpret_sexpr(args.e.arg, args.is_at_comptime, args.token)
+    arg = interpret_sexpr(args.e.arg, args.is_at_comptime, args.token) if isinstance(args.e.arg, SExpr) else interpret_expr(args.e.arg, args.is_at_comptime, args.token)
     if not isinstance(arg, SExprSymbol) or not arg.sym.isnumeric():
         raise RuntimeError(f"Expected numberic but got `{stringify(arg)}' at {format_loc(args.e.arg.token) if isinstance(arg, Expr) else 'Somewhere'}")
     a = SExprTuple(tok, False, [])
@@ -229,7 +241,7 @@ def bf_to_peano(args: BuiltinFunc_Args) -> SExpr:
 
 def bf_inclusion_level(args: BuiltinFunc_Args) -> SExpr:
     tok = args.token if args.token is not None else NITOK
-    arg = interpret_expr(args.e.arg, args.is_at_comptime, args.token) if isinstance(args.e.arg, Expr) else interpret_sexpr(args.e.arg, args.is_at_comptime, args.token)
+    arg = interpret_sexpr(args.e.arg, args.is_at_comptime, args.token) if isinstance(args.e.arg, SExpr) else interpret_expr(args.e.arg, args.is_at_comptime, args.token)
     if not isinstance(arg, SExprTuple):
         raise RuntimeError(f"Expected tuple but got `{stringify(arg)}' at {format_loc(args.e.arg.token) if isinstance(arg, Expr) else 'Somewhere'}")
     a = 1
@@ -245,7 +257,7 @@ def bf_inclusion_level(args: BuiltinFunc_Args) -> SExpr:
     return SExprSymbol(tok, False, str(a))
 
 def bf_let(args: BuiltinFunc_Args) -> SExpr:
-    arg = interpret_expr(args.e.arg, args.is_at_comptime, args.token) if isinstance(args.e.arg, Expr) else interpret_sexpr(args.e.arg, args.is_at_comptime, args.token)
+    arg = interpret_sexpr(args.e.arg, args.is_at_comptime, args.token) if isinstance(args.e.arg, SExpr) else interpret_expr(args.e.arg, args.is_at_comptime, args.token)
     if not isinstance(arg, SExprTuple) or len(arg.el) != 2:
         raise RuntimeError(f"Expected ({{ID}} {{EL}}) but got `{stringify(arg)}' at {format_loc(arg.token) if isinstance(arg, Expr) else 'Somewhere'}")
     if not isinstance(arg.el[0], SExprSymbol):
@@ -258,6 +270,7 @@ builtin_funcs: Dict[str, Callable[[BuiltinFunc_Args], SExpr]] = {
     "_ISCOMPTIME": bf_iscomptime,
     "_LENGTH": bf_length,
     "_ISSYMBOL": bf_is_symbol,
+    "_CONCAT": bf_concat,
     "_GI": bf_gi,
     "_SI": bf_si,
     "_TOPEANO": bf_to_peano,
@@ -272,7 +285,7 @@ def expr_to_sexpr(e: Expr) -> SExpr:
         return SExprCall(e.token, False, e.fun, expr_to_sexpr(e.arg))
     if isinstance(e, ExprTuple):
         return SExprTuple(e.token, False, [expr_to_sexpr(i) for i in e.el])
-    assert False, "Unreachable"
+    assert False, f"Unreachable: {e}"
 
 def interpreter_let(name: str, expr: SExpr, tok: Token | None) -> None:
     if name in transformations:
