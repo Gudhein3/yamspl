@@ -1,0 +1,35 @@
+form sum: (A add (s B)) -> sum[((s sum[A]) add sum[B])]
+form sum: (A add 0)     -> A
+form sum: (A add B)     -> sum[(sum[A] add sum[B])]
+form sum: A             -> A
+
+form fib: 0             -> 0
+form fib: (s 0)         -> (s 0)
+form fib: (s (s N))     -> sum[(fib[(s N)] add fib[N])]
+
+let x = fib[_TOPEANO[1]]
+show _INCLVL[x]
+
+let x = fib[_TOPEANO[2]]
+show _INCLVL[x]
+
+let x = fib[_TOPEANO[3]]
+show _INCLVL[x]
+
+let x = fib[_TOPEANO[4]]
+show _INCLVL[x]
+
+let x = fib[_TOPEANO[5]]
+show _INCLVL[x]
+
+let x = fib[_TOPEANO[6]]
+show _INCLVL[x]
+
+let x = fib[_TOPEANO[7]]
+show _INCLVL[x]
+
+let x = fib[_TOPEANO[8]]
+show _INCLVL[x]
+
+let x = fib[_TOPEANO[15]]
+show _INCLVL[x]
